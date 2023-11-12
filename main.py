@@ -81,9 +81,26 @@ class Recorder:
             while self.listening: pass
 
 if __name__ == '__main__':
+    match len(sys.argv):
+        case 0:
+            print('\n','Первым аргументом обычно (в windows) указан путь до файла программы','\n')
+            exit(0)
+        case 1:
+            print('\n','Вторым аругментом укажите имя файла для записи/воспроизведения макроса','\n')
+            exit(0)
+        case 2:
+            print('\n','Третьим аргументом укажите "w" для записи или "r" для чтения','\n')
+            exit(0)
+
     path = sys.argv[1]
-    recorder = Recorder(path, is_using_time=True)
-    recorder.listen()
+    readWriteArg = sys.argv[2]
+
+    if readWriteArg == 'r':
+        ...
+    elif readWriteArg == 'w':
+        recorder = Recorder(path, is_using_time=True)
+        print('\n','Для выхода из программы зажмите ctrl +', recorder.exitKey.name, '\n')
+        recorder.listen()
 
 
 
