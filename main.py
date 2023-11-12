@@ -41,8 +41,8 @@ def keyboard_on_press(key): pass
     #print(key, ': pressed')
 
 @logger_wrapper_factory()
-def mouse_on_click(x, y, button, pressed):
-    print(f'{button} {pressed} at {(x, y)}')
+def mouse_on_click(x, y, button, pressed): pass
+    #print(f'{button} {pressed} at {(x, y)}')
 
 
 if __name__ == '__main__':
