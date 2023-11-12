@@ -1,0 +1,14 @@
+K+, Key.ctrl_l, 465
+K-, Key.ctrl_l, 171
+K+, Key.ctrl_l, 64
+K-, Key.ctrl_l, 125
+K+, Key.ctrl_l, 63
+K-, Key.ctrl_l, 77
+K+, Key.ctrl_l, 1795
+K+, '\x03', 233
+K-, '\x03', 48
+K-, Key.ctrl_l, 31
+M, 648, 148, Button.left, True, 743
+M, 648, 148, Button.left, False, 62
+M, 686, 44, Button.left, True, 1073
+M, 686, 44, Button.left, False, 109

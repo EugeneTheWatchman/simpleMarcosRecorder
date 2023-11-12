@@ -3,6 +3,8 @@ from pynput import keyboard
 import sys
 import time
 
+using_time = False
+
 def loggerFactory(file):
     def logger(type, args, is_key_pressed):
         if is_key_pressed is None:
@@ -11,7 +13,14 @@ def loggerFactory(file):
             pressed = '+'
         else:
             pressed = '-'
-        file.write(f'{type + pressed}, {str(args)[1:-1]}\n')
+
+        global last_event_time
+        now_time = time.time_ns()
+        file.write(type + pressed + ', ' +
+                   ', '.join([str(i) for i in args]) + ', ' +
+                    f'{ round((now_time - last_event_time) / 1_000_000) }'
+                             + '\n')
+        last_event_time = now_time
 
     return logger
 
@@ -32,8 +41,8 @@ def keyboard_on_press(key): pass
     #print(key, ': pressed')
 
 @logger_wrapper_factory()
-def mouse_on_click(x, y, button, pressed): pass
-    #print(f'{button} {pressed} at {(x, y)}')
+def mouse_on_click(x, y, button, pressed):
+    print(f'{button} {pressed} at {(x, y)}')
 
 
 if __name__ == '__main__':
@@ -44,6 +53,7 @@ if __name__ == '__main__':
     path = sys.argv[1]
     with open(path, 'wt', encoding='utf-8') as file:
         logger = loggerFactory(file)
+        last_event_time = time.time_ns()
         Mlistener.start()
         Klistener.start()
         while True: pass
