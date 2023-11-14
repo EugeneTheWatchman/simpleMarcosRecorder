@@ -3,12 +3,14 @@ from pynput import keyboard
 import sys
 import time
 import enum
+from abc import ABC, abstractmethod
 
 class COMMAND(enum.Enum):
     MOUSE = "M"
     KEYBOARD = "K"
     KEYBOARD_UP = "K+"
     KEYBOARD_DOWN = "K-"
+
 
 
 class Recorder:
@@ -102,13 +104,34 @@ class Reader:
             print('--------------all--------------')
     def handle(self, line):
         command = line[:-1].replace(' ', '').split(',')
-        match command[0]:
-            case COMMAND.MOUSE:
-                ...
-            case COMMAND.KEYBOARD_UP:
-                ...
-            case COMMAND.KEYBOARD_DOWN:
-                ...
+        action = Action.create(COMMAND(command[0]), command[1:])
+        action.execute()
+
+
+class Action(ABC):
+    @staticmethod
+    def create(type, command):
+        match type:
+            case COMMAND.MOUSE: return MouseAction(*command)
+            case COMMAND.KEYBOARD_UP: return KeyboardAction(True, *command)
+            case COMMAND.KEYBOARD_DOWN: return KeyboardAction(False, *command)
+            case _:
+                raise NotImplementedError(f'{command[0]} in {command} is unexpected')
+
+    @abstractmethod
+    def execute(self): ...
+
+class MouseAction(Action):
+    def __init__(self, x, y, button, dtime):
+        print(x,y,button,dtime)
+
+    def execute(self): ...
+
+class KeyboardAction(Action):
+    def __init__(self, is_pressed, key, dtime):
+        print(is_pressed, key, dtime)
+
+    def execute(self): ...
 
 
 if __name__ == '__main__':
