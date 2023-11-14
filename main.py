@@ -2,6 +2,14 @@ from pynput import mouse
 from pynput import keyboard
 import sys
 import time
+import enum
+
+class COMMAND(enum.Enum):
+    MOUSE = "M"
+    KEYBOARD = "K"
+    KEYBOARD_UP = "K+"
+    KEYBOARD_DOWN = "K-"
+
 
 class Recorder:
     using_time = False
@@ -25,13 +33,14 @@ class Recorder:
         self.last_event_time = now_time
         return time_passed
 
-    def logger(self, type, args):
-        if type == 'M':
-            pressed = ''
-        else:
-            pressed = '+' if args[-1] else '-'
+    def logger(self, command: COMMAND, args):
+        if command == COMMAND.KEYBOARD:
+            if args[-1]: # if pressed
+                command = COMMAND.KEYBOARD_UP
+            else:
+                command = COMMAND.KEYBOARD_DOWN
 
-        self.file.write(type + pressed + ', '
+        self.file.write(command + ', '
                    +', '.join([str(i) for i in args[:-1]])
                    + (f', { self.get_time_passed() }' if self.using_time else '')
                    + '\n')
@@ -40,7 +49,7 @@ class Recorder:
         def logger_wrapper(func):
             def wrapper(self, *args, **kwargs):
                 #if len(args) == 1: # keyboard event
-                self.logger('K' if is_keyboard else 'M', args)
+                self.logger(COMMAND.KEYBOARD if is_keyboard else COMMAND.MOUSE, args)
                 return func(self, *args, **kwargs)
             return wrapper
         return logger_wrapper
@@ -74,11 +83,33 @@ class Recorder:
         Klistener = keyboard.Listener(on_press=self.keyboard_on_press,
                                       on_release=self.keyboard_on_release)
 
-        with open(path, 'wt', encoding='utf-8') as file:
+        with open(self.file_path, 'wt', encoding='utf-8') as file:
             self.file = file
             Mlistener.start()
             Klistener.start()
             while self.listening: pass
+
+
+class Reader:
+    file_path = None
+    file = None
+    def __init__(self, file_path):
+        self.file_path = file_path
+    def read(self):
+        with open(self.file_path, 'rt', encoding='utf-8') as file:
+            for line in file:
+                self.handle(line)
+            print('--------------all--------------')
+    def handle(self, line):
+        command = line[:-1].replace(' ', '').split(',')
+        match command[0]:
+            case COMMAND.MOUSE:
+                ...
+            case COMMAND.KEYBOARD_UP:
+                ...
+            case COMMAND.KEYBOARD_DOWN:
+                ...
+
 
 if __name__ == '__main__':
     match len(sys.argv):
@@ -96,7 +127,8 @@ if __name__ == '__main__':
     readWriteArg = sys.argv[2]
 
     if readWriteArg == 'r':
-        ...
+        reader = Reader(path)
+        reader.read()
     elif readWriteArg == 'w':
         recorder = Recorder(path, is_using_time=True)
         print('\n','Для выхода из программы зажмите ctrl +', recorder.exitKey.name, '\n')

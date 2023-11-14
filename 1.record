@@ -1,2 +1,46 @@
-M, 1659, 41, Button.left, 3753
-M, 1659, 41, Button.left, 123
+M, 2278, 532, Button.left, 2191
+M, 2278, 532, Button.left, 49
+M, 1400, 521, Button.left, 1905
+M, 1400, 520, Button.left, 87
+M, 1234, 2150, Button.left, 2757
+M, 1234, 2148, Button.left, 62
+K+, 'r', 5113
+K-, 'r', 73
+K+, 'f', 116
+K-, 'f', 121
+K+, 'r', 80
+K-, 'r', 99
+K+, Key.backspace, 761
+K-, Key.backspace, 94
+K+, Key.backspace, 33
+K-, Key.backspace, 64
+K+, Key.backspace, 15
+K-, Key.backspace, 64
+K+, Key.backspace, 63
+K-, Key.backspace, 46
+K+, Key.shift, 86
+K+, Key.alt_l, 74
+K-, Key.shift, 57
+K-, Key.alt_l, 40
+K+, Key.media_volume_down, 5505
+K-, Key.media_volume_down, 137
+K+, Key.media_volume_down, 1319
+K-, Key.media_volume_down, 101
+K+, Key.media_volume_down, 118
+K-, Key.media_volume_down, 74
+K+, Key.media_volume_down, 91
+K-, Key.media_volume_down, 53
+K+, Key.media_volume_mute, 277
+K-, Key.media_volume_mute, 101
+K+, Key.f2, 1473
+K-, Key.f2, 120
+K+, Key.f3, 832
+K-, Key.f3, 126
+M, 3175, 1480, Button.left, 5050
+M, 3175, 1480, Button.left, 94
+K+, Key.alt_l, 226
+K+, Key.f4, 184
+K-, Key.f4, 109
+K-, Key.alt_l, 24
+K+, Key.ctrl_l, 2211
+K+, Key.esc, 121
