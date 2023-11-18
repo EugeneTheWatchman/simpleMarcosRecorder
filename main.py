@@ -4,11 +4,12 @@ import sys
 import time
 import enum
 from abc import ABC, abstractmethod
-from functools import reduce
+from numpy import inf as INFINITY
 
 SEPARATOR = '\t'
 
-class COMMAND(enum.Enum):
+
+class COMMAND(enum.StrEnum):
     KEYBOARD = "K"
     MOUSE = "M"
     KEYBOARD_DOWN = "K+"
@@ -59,6 +60,7 @@ class Recorder:
         if self.using_time:
             command_line.append(self.get_time_passed())
         self.file.write(SEPARATOR.join(map(str, command_line)) + '\n')
+
     def logger_wrapper_factory(*, is_keyboard):
         def logger_wrapper(func):
             def wrapper(self, *args, **kwargs):
@@ -70,9 +72,10 @@ class Recorder:
         return logger_wrapper
 
     def check_exit_state(self):
-        if self.keysPressed[self.exit_key] and self.keysPressed[keyboard.Key.ctrl]: # check exit condition
+        if self.keysPressed[self.exit_key] and self.keysPressed[keyboard.Key.ctrl]:  # check exit condition
             self.should_stop = True
-        elif self.should_stop and not any(self.keysPressed.values()): # check if 'all' keys released | note: 'all' means two keys in this implementation, ctrl and exit_key
+        elif self.should_stop and not any(
+                self.keysPressed.values()):  # check if 'all' keys released | note: 'all' means two keys in this implementation, ctrl and exit_key
             self.listening = False
 
     @logger_wrapper_factory(is_keyboard=True)
@@ -111,15 +114,20 @@ class Recorder:
 class Reader:
     file_path = None
     file = None
+    times_loop = 1
 
-    def __init__(self, file_path):
+    def __init__(self, file_path, times_loop=1):
         self.file_path = file_path
+        self.times_loop = times_loop
 
     def read(self):
-        with open(self.file_path, 'rt', encoding='utf-8') as file:
-            for line in file:
-                self.handle(line)
-            print('Complete!')
+        loops = 0
+        while loops < self.times_loop:
+            with open(self.file_path, 'rt', encoding='utf-8') as file:
+                for line in file:
+                    self.handle(line)
+            loops += 1
+            print(f'Loop {loops} ended!')
 
     def handle(self, line):
         command = line[:-1].split(SEPARATOR)
@@ -157,7 +165,7 @@ class MouseAction(Action):
         self.y = int(y)
         self.button = mouse.Button(eval(button))
         global times_faster
-        self.dtime = int(dtime)/1000/times_faster
+        self.dtime = int(dtime) / 1000 / times_faster
 
     def execute(self):
         time.sleep(self.dtime)
@@ -177,7 +185,7 @@ class KeyboardAction(Action):
     def __init__(self, is_pressed, key, dtime=0):
         self.is_pressed = is_pressed
         self.key = keyboard.KeyCode(int(key[1:-1])) if key[0] == '<' else key[1:-1]
-        self.dtime = int(dtime)/1000/times_faster
+        self.dtime = int(dtime) / 1000 / times_faster
 
     def execute(self):
         time.sleep(self.dtime)
@@ -187,51 +195,102 @@ class KeyboardAction(Action):
             self.controller.release(self.key)
 
 
+class Validate(ABC):
+    @staticmethod
+    def path(argv):
+        match len(argv):
+            case 0:
+                print('\n', 'Нулевым аргументом обычно (в windows) указан путь до файла программы', '\n')
+                exit(0)
+            case 1:
+                print('\n', 'Первым аругментом укажите имя файла для записи/воспроизведения макроса', '\n')
+                exit(0)
+        return sys.argv[1]
+
+    @staticmethod
+    def time_registration(argv):
+        if (ARGUMENTS.TIME in argv) or (ARGUMENTS.TIME_FULLNAME in argv):
+            is_using_time = True
+        else:
+            is_using_time = False
+            print('\n', f'Укажите {ARGUMENTS.TIME}|{ARGUMENTS.TIME_FULLNAME} для регистрации времени между действиями', '\n')
+        return is_using_time
+
+    @staticmethod
+    def times_faster(argv):
+        try:
+            index = argv.index(ARGUMENTS.TIME)
+        except ValueError:
+            try:
+                index = argv.index(ARGUMENTS.TIME_FULLNAME)
+            except ValueError:
+                print('\n', f'Укажите {ARGUMENTS.TIME}|{ARGUMENTS.TIME_FULLNAME} и N (число), для ускорения действия в N раз', '\n', 'По-умолчанию выбрано 1')
+                return 1
+
+        if len(argv) > (index + 1):
+            times_faster = argv[index + 1]
+        else:
+            print('\n', f'Укажите {ARGUMENTS.TIME}|{ARGUMENTS.TIME_FULLNAME} и N (число), для ускорения действия в N раз', '\n', 'По-умолчанию выбрано 1')
+            times_faster = 1
+
+        if times_faster == 0:
+            print('\n', f'При указании {ARGUMENTS.TIME_FULLNAME} 0, задержка между действиями обнуляется', '\n')
+            return INFINITY
+
+        return times_faster
+
+    @staticmethod
+    def times_loop(argv):
+        try:
+            index = argv.index(ARGUMENTS.LOOP)
+        except ValueError:
+            try:
+                index = argv.index(ARGUMENTS.LOOP_FULLNAME)
+            except ValueError:
+                print('\n', f'Укажите {ARGUMENTS.LOOP}|{ARGUMENTS.LOOP_FULLNAME} и N (число), для повторения действия N раз', '\n', 'По-умолчанию выбран 1')
+                return 1
+
+        if len(argv) > (index + 1):
+            times_loop = argv[index + 1]
+        else:
+            print('\n', f'Укажите {ARGUMENTS.LOOP}|{ARGUMENTS.LOOP_FULLNAME} и N (число), для повторения действия N раз', '\n', 'По-умолчанию выбран 1')
+            times_loop = 1
+
+        if times_loop == 0:
+            print('\n', f'При указании {ARGUMENTS.LOOP_FULLNAME} 0, цикл будет выполняться бесконечно', '\n')
+            return INFINITY
+
+        return times_loop
+
+
 if __name__ == '__main__':
-    class ARGUMENTS(enum.Enum):
-        RECORD = 'w'
-        EXECUTE = 'r'
-        TIME = 't'
+    class ARGUMENTS(enum.StrEnum):
+        RECORD = '-r'
+        EXECUTE = '-e'
+        TIME = '-t'
+        LOOP = '-l'
+        RECORD_FULLNAME = '-record'
+        EXECUTE_FULLNAME = '-execute'
+        TIME_FULLNAME = '-time'
+        LOOP_FULLNAME = '-loop'
 
-    # is_using_time = False
-    # times_faster = 1
-    match len(sys.argv):
-        case 0:
-            print('\n', 'Нулевым аргументом обычно (в windows) указан путь до файла программы', '\n')
-            exit(0)
-        case 1:
-            print('\n', 'Первым аругментом укажите имя файла для записи/воспроизведения макроса', '\n')
-            exit(0)
-        case 2:
-            print('\n', 'Вторым аргументом укажите "{0}" для записи или "{1}" для чтения'.format(
-                ARGUMENTS.RECORD, ARGUMENTS.EXECUTE), '\n')
-            exit(0)
-        case 3:
-            match ARGUMENTS(sys.argv[2]):
-                case ARGUMENTS.RECORD:
-                    is_using_time = False
-                    # times_faster = 1
-                    print(f'Третьим аргументом укажите "{ARGUMENTS.TIME}" для учета времени между кликами')
-                case ARGUMENTS.EXECUTE:
-                    print('\n', 'Третьим аргументом укажите число - кол-во раз в которое будет ускорено время между кликами', '\n')
-                    exit(0)
-        case 4:
-            if sys.argv[3] == ARGUMENTS.TIME:
-                is_using_time = True
-            elif sys.argv[3].replace('.','').isdigit():
-                times_faster = float(sys.argv[3])
-                times_faster = times_faster if times_faster != 0 else 1
-            else:
-                is_using_time = False
-                times_faster = 1
 
-    path = sys.argv[1]
+    # ARG VALIDATION
+    # path validate
+    record_file_path = Validate.path(sys.argv)
+    # rec-exec validate
+    if (ARGUMENTS.RECORD in sys.argv) or (ARGUMENTS.RECORD_FULLNAME in sys.argv):
+        is_using_time = Validate.time_registration(sys.argv)
 
-    match ARGUMENTS(sys.argv[2]):
-        case ARGUMENTS.RECORD:
-            recorder = Recorder(path, is_using_time=True)
-            print('\n', 'Для выхода из программы зажмите ctrl +', recorder.exit_key.name, '\n')
-            recorder.listen()
-        case ARGUMENTS.EXECUTE:
-            reader = Reader(path)
-            reader.read()
+        recorder = Recorder(record_file_path, is_using_time=is_using_time)
+        print('\n', 'Для выхода из программы зажмите ctrl +', recorder.exit_key.name, '\n')
+        recorder.listen()
+    elif (ARGUMENTS.EXECUTE in sys.argv) or (ARGUMENTS.EXECUTE_FULLNAME in sys.argv):
+        times_faster = Validate.times_faster(sys.argv)
+        times_loop = Validate.times_loop(sys.argv)
+
+        reader = Reader(record_file_path, times_loop)
+        reader.read()
+    else:
+        print(
+            f'Укажите {ARGUMENTS.RECORD}|{ARGUMENTS.RECORD_FULLNAME} для записи или {ARGUMENTS.EXECUTE}|{ARGUMENTS.EXECUTE_FULLNAME} для воспроизведения')
