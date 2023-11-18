@@ -15,3 +15,10 @@
   - in `execute` mode `-time N` indicates how many times faster to play the macro. If `N` is `0`, times faster = infinity 
 - `-loop M`.
   - in `execute` mode indicates how many times repeat marco. If `M` is `0`, repeats endlessly.
+
+## afterword
+
+there are some bugs at the moment:
+1. works only for windows
+2. display scale specifies different coordinate systems for recording and running macros
+3. executing on speed much more than 1 may cause incorrect keyboard input
