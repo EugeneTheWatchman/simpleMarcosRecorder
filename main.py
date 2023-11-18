@@ -262,7 +262,6 @@ class Validate(ABC):
 
         return times_loop
 
-
 if __name__ == '__main__':
     class ARGUMENTS(enum.StrEnum):
         RECORD = '-r'
