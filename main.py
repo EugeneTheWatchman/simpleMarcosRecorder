@@ -228,7 +228,7 @@ class Validate(ABC):
                 return 1
 
         if len(argv) > (index + 1):
-            times_faster = argv[index + 1]
+            times_faster = int(argv[index + 1])
         else:
             print('\n', f'Укажите {ARGUMENTS.TIME}|{ARGUMENTS.TIME_FULLNAME} и N (число), для ускорения действия в N раз', '\n', 'По-умолчанию выбрано 1')
             times_faster = 1
@@ -251,7 +251,7 @@ class Validate(ABC):
                 return 1
 
         if len(argv) > (index + 1):
-            times_loop = argv[index + 1]
+            times_loop = int(argv[index + 1])
         else:
             print('\n', f'Укажите {ARGUMENTS.LOOP}|{ARGUMENTS.LOOP_FULLNAME} и N (число), для повторения действия N раз', '\n', 'По-умолчанию выбран 1')
             times_loop = 1
